@@ -30,7 +30,7 @@ macro_rules! create_test {
             };
 
             let qbjs_content = read_file(&qbjs_file_path);
-            let decoded_content = qbjs_reader::qbjs::decode(&qbjs_content);
+            let decoded_content = qbjs_reader::qbjs::decode_to_json(&qbjs_content);
 
             assert_eq!(decoded_content.unwrap(), expected_json);
         }
@@ -64,7 +64,7 @@ macro_rules! create_error_check_test {
             };
 
             let qbjs_content = read_file(&qbjs_file_path);
-            let decoded_content = qbjs_reader::qbjs::decode(&qbjs_content);
+            let decoded_content = qbjs_reader::qbjs::decode_to_json(&qbjs_content);
 
             match decoded_content {
                 Ok(_) => {
