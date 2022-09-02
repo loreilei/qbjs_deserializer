@@ -1,0 +1,12 @@
+{
+    "root object": {
+        "child array 1": [
+            "value 1",
+            "value 2"
+        ],
+        "child array 2": [
+            "value 1",
+            "value 2"
+        ]
+    }
+}

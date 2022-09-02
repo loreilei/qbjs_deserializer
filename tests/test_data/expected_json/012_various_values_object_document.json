@@ -1,0 +1,16 @@
+{
+    "null value key": null,
+    "bool value key 1": true,
+    "bool value key 2": false,
+    "positive double value key": 3.14159,
+    "zero double value key": 0.0,
+    "more than 27 bits double value key": 1073741824.0,
+    "negative double value key": -3.14159,
+    "positive int value key": 3,
+    "negative int value key": -3,
+    "string value key": "Lorem ipsum sit amet",
+    "split string value key 1": "Lorem ipsum",
+    "split string value key 2": "sit amet",
+    "this is a string key": "私 は 日本語 お 書きます",
+    "それ は 鍵 です": "and this is a value"
+}
