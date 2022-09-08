@@ -4,7 +4,7 @@ use crate::analysis::{analyze_document, data, header, Error};
 use crate::error::DecodeError;
 use crate::read;
 
-pub fn decode_to_json(qbjs: &[u8]) -> Result<Value, DecodeError> {
+pub fn deserialize_to_json(qbjs: &[u8]) -> Result<Value, DecodeError> {
     if qbjs.is_empty() {
         return Ok(serde_json::json!({}));
     }
