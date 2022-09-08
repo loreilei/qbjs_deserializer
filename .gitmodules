@@ -1,0 +1,3 @@
+[submodule "utils/json_to_qbjs_converter"]
+	path = utils/json_to_qbjs_converter
+	url = https://github.com/loreilei/json_to_qbjs_converter.git
