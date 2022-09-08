@@ -1,4 +1,4 @@
-use qbjs_reader;
+use qbjs_deserializer;
 
 use std::fs;
 
@@ -30,9 +30,9 @@ macro_rules! create_test {
             };
 
             let qbjs_content = read_file(&qbjs_file_path);
-            let decoded_content = qbjs_reader::qbjs::decode_to_json(&qbjs_content);
+            let deserialized_content = qbjs_deserializer::qbjs::deserialize_to_json(&qbjs_content);
 
-            assert_eq!(decoded_content.unwrap(), expected_json);
+            assert_eq!(deserialized_content.unwrap(), expected_json);
         }
     };
 }
@@ -64,9 +64,9 @@ macro_rules! create_error_check_test {
             };
 
             let qbjs_content = read_file(&qbjs_file_path);
-            let decoded_content = qbjs_reader::qbjs::decode_to_json(&qbjs_content);
+            let deserialized_content = qbjs_deserializer::qbjs::deserialize_to_json(&qbjs_content);
 
-            match decoded_content {
+            match deserialized_content {
                 Ok(_) => {
                     assert!(false)
                 }
@@ -120,13 +120,13 @@ create_tests!(
 // FIXME: Try to find the right macro to declare test name and expected error code as a list of tuple
 create_error_check_test!(
     _301_insufficient_data_document,
-    qbjs_reader::error::DecodeError::InsufficientData
+    qbjs_deserializer::error::DecodeError::InsufficientData
 );
 create_error_check_test!(
     _302_invalid_qbjs_tag_document,
-    qbjs_reader::error::DecodeError::MalformedHeader
+    qbjs_deserializer::error::DecodeError::MalformedHeader
 );
 create_error_check_test!(
     _303_invalid_qbjs_version_document,
-    qbjs_reader::error::DecodeError::MalformedHeader
+    qbjs_deserializer::error::DecodeError::MalformedHeader
 );
