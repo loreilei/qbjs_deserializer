@@ -1,29 +1,29 @@
 use serde_json::Value;
 
-use crate::analysis::{analyze_document, data, header, Error};
-use crate::error::DecodeError;
+use crate::analysis::{self, analyze_document, data, header};
 use crate::read;
 
-pub fn deserialize_to_json(qbjs: &[u8]) -> Result<Value, DecodeError> {
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum DeserializeError {
+    AnalysisError(analysis::AnalysisError),
+    InsufficientData,
+    InvalidRootContainer,
+}
+
+pub fn deserialize_to_json(qbjs: &[u8]) -> Result<Value, DeserializeError> {
     if qbjs.is_empty() {
         return Ok(serde_json::json!({}));
     }
 
     if qbjs.len() < header::HEADER_LENGTH {
-        return Err(DecodeError::InsufficientData);
+        return Err(DeserializeError::InsufficientData);
     }
 
     match analyze_document(&qbjs) {
         Ok(value) => match value {
             data::Value::Array(_) | data::Value::Object(_) => Ok(read::read_value(&qbjs, &value)),
-            _ => Err(DecodeError::InvalidRootContainer),
+            _ => Err(DeserializeError::InvalidRootContainer),
         },
-        Err(e) => match e {
-            Error::Header(header_error) => match header_error {
-                header::Error::InvalidLength => Err(DecodeError::InsufficientData),
-                header::Error::InvalidTag => Err(DecodeError::MalformedHeader),
-                header::Error::InvalidVersion => Err(DecodeError::MalformedHeader),
-            },
-        },
+        Err(e) => Err(DeserializeError::AnalysisError(e)),
     }
 }
