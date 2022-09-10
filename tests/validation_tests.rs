@@ -120,13 +120,21 @@ create_tests!(
 // FIXME: Try to find the right macro to declare test name and expected error code as a list of tuple
 create_error_check_test!(
     _301_insufficient_data_document,
-    qbjs_deserializer::error::DecodeError::InsufficientData
+    qbjs_deserializer::qbjs::DeserializeError::InsufficientData
 );
 create_error_check_test!(
     _302_invalid_qbjs_tag_document,
-    qbjs_deserializer::error::DecodeError::MalformedHeader
+    qbjs_deserializer::qbjs::DeserializeError::AnalysisError(
+        qbjs_deserializer::analysis::AnalysisError::HeaderAnalysisError(
+            qbjs_deserializer::analysis::header::Error::InvalidTag
+        )
+    )
 );
 create_error_check_test!(
     _303_invalid_qbjs_version_document,
-    qbjs_deserializer::error::DecodeError::MalformedHeader
+    qbjs_deserializer::qbjs::DeserializeError::AnalysisError(
+        qbjs_deserializer::analysis::AnalysisError::HeaderAnalysisError(
+            qbjs_deserializer::analysis::header::Error::InvalidVersion
+        )
+    )
 );
