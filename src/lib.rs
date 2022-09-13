@@ -1,4 +1,4 @@
 pub mod analysis;
 pub mod qbjs;
-mod read;
+pub mod read;
 mod type_conversions;
