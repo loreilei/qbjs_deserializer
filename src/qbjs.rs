@@ -1,7 +1,7 @@
 use serde_json::Value;
 
-use crate::analysis::{self, analyze_document, data, header};
-use crate::read;
+pub use crate::analysis::{self, analyze_document, data, header};
+pub use crate::read;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DeserializeError {
