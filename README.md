@@ -30,6 +30,8 @@ Some basic JSON structures have been encoded to qbjs files thanks to the utilita
 The JSON files used to generated the qbjs files with this tool are located in the `tests/test_data/expected_json` folder.
 These files are reused by tests: they are parsed with serde_json and the resulting JSON value is compared to the library output.
 
-
+## C++ FFI
+Qt being mainly used with C++ projects, a C++ FFI is available in [this repository](https://github.com/loreilei/qbjs_deserializer_cxx).
+It provides [conan](https://conan.io/) packages and CMake finders.
 
 
