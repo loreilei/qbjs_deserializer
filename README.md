@@ -1,3 +1,5 @@
+[![Build Status](https://app.travis-ci.com/loreilei/qbjs_deserializer.svg?branch=main)](https://app.travis-ci.com/loreilei/qbjs_deserializer)
+
 ## About this library
 
 This library is an attempt to deserialize files serialized in Qt5's internal binary JSON format.
