@@ -147,7 +147,7 @@ pub mod metadata {
             };
 
             let is_object = (object_flag_and_length & 0b1) != 0;
-            let length = (object_flag_and_length & !(0b1 as u32)) >> 1;
+            let length = (object_flag_and_length & !0b1_u32) >> 1;
 
             let table_offset = match data.get(TABLE_OFFSET_RANGE) {
                 Some(data) => as_u32(data),
@@ -180,7 +180,7 @@ pub mod metadata {
 
     impl ValueHeader {
         pub fn from_data(data: &[u8], position: usize) -> Result<Self, Error> {
-            let header = match data.get(0) {
+            let header = match data.first() {
                 Some(header) => header,
                 None => {
                     return Err(Error::InvalidValueHeaderSize);
@@ -235,12 +235,12 @@ pub fn analyze_document(data: &[u8]) -> Result<data::Value, AnalysisError> {
     match container_base {
         Ok(container_base) => {
             if container_base.is_object {
-                match analyze_object(&data, header::HEADER_LENGTH) {
+                match analyze_object(data, header::HEADER_LENGTH) {
                     Ok(analyzed_object) => Ok(analyzed_object.0),
                     Err(e) => Err(e),
                 }
             } else {
-                match analyze_array(&data, header::HEADER_LENGTH) {
+                match analyze_array(data, header::HEADER_LENGTH) {
                     Ok(analyzed_array) => Ok(analyzed_array.0),
                     Err(e) => Err(e),
                 }
@@ -287,7 +287,7 @@ fn analyze_array(data: &[u8], base_start: usize) -> Result<(data::Value, usize),
                 };
 
                 match header {
-                    Ok(header) => match analyze_value(&data, &header, base_start) {
+                    Ok(header) => match analyze_value(data, &header, base_start) {
                         Ok((value, _)) => {
                             values.push(value);
 
@@ -336,7 +336,7 @@ fn analyze_object(data: &[u8], base_start: usize) -> Result<(data::Value, usize)
 
             let mut offset = base_end;
             for _i in 0..nb_entries {
-                match analyze_entry(&data, offset, base_start) {
+                match analyze_entry(data, offset, base_start) {
                     Ok((entry, entry_end)) => {
                         entries.push(entry);
 
@@ -389,7 +389,7 @@ fn analyze_entry(
                 }
             };
 
-            match analyze_value(&data, &header, object_start) {
+            match analyze_value(data, &header, object_start) {
                 Ok((value, value_end)) => {
                     let entry_end = match value {
                         data::Value::Null(_)
@@ -400,9 +400,7 @@ fn analyze_entry(
 
                     Ok((data::Entry { key, value }, entry_end))
                 }
-                Err(e) => {
-                    return Err(e);
-                }
+                Err(e) => Err(e),
             }
         }
         Err(e) => Err(AnalysisError::MetadataAnalysisError(e)),
@@ -451,14 +449,12 @@ fn analyze_latin1_key(data: &[u8], key_start: usize) -> Result<(data::Key, usize
     let size_field_range = key_start..(key_start + metadata::LATIN1_SIZE_FIELD_LENGTH);
     match data.get(size_field_range) {
         Some(data) => {
-            let (bytefield, key_end) = analyze_latin1_string(&data, key_start);
+            let (bytefield, key_end) = analyze_latin1_string(data, key_start);
             Ok((data::Key::Latin1String(bytefield), key_end))
         }
-        None => {
-            return Err(AnalysisError::DataAnalysisError(
-                data::Error::InvalidValueLength,
-            ));
-        }
+        None => Err(AnalysisError::DataAnalysisError(
+            data::Error::InvalidValueLength,
+        )),
     }
 }
 
@@ -466,14 +462,12 @@ fn analyze_utf16_key(data: &[u8], key_start: usize) -> Result<(data::Key, usize)
     let size_field_range = key_start..(key_start + metadata::UTF16_SIZE_FIELD_LENGTH);
     match data.get(size_field_range) {
         Some(data) => {
-            let (bytefield, key_end) = analyze_utf16_string(&data, key_start);
+            let (bytefield, key_end) = analyze_utf16_string(data, key_start);
             Ok((data::Key::Utf16String(bytefield), key_end))
         }
-        None => {
-            return Err(AnalysisError::DataAnalysisError(
-                data::Error::InvalidValueLength,
-            ));
-        }
+        None => Err(AnalysisError::DataAnalysisError(
+            data::Error::InvalidValueLength,
+        )),
     }
 }
 
@@ -513,11 +507,11 @@ fn analyze_value(
         }
         QT_ARRAY_VALUE => {
             let value_range_start = container_start + header.value_bit_field as usize;
-            analyze_array(&data, value_range_start)
+            analyze_array(data, value_range_start)
         }
         QT_OBJECT_VALUE => {
             let value_range_start = container_start + header.value_bit_field as usize;
-            analyze_object(&data, value_range_start)
+            analyze_object(data, value_range_start)
         }
         _ => Err(AnalysisError::DataAnalysisError(
             data::Error::UnknownQtValue,
@@ -548,14 +542,12 @@ fn analyze_latin1_string_value(
     let size_field_range = value_start..(value_start + metadata::LATIN1_SIZE_FIELD_LENGTH);
     match data.get(size_field_range) {
         Some(data) => {
-            let (bytefield, value_end) = analyze_latin1_string(&data, value_start);
+            let (bytefield, value_end) = analyze_latin1_string(data, value_start);
             Ok((data::Value::Latin1String(bytefield), value_end))
         }
-        None => {
-            return Err(AnalysisError::DataAnalysisError(
-                data::Error::InvalidValueLength,
-            ));
-        }
+        None => Err(AnalysisError::DataAnalysisError(
+            data::Error::InvalidValueLength,
+        )),
     }
 }
 
@@ -566,13 +558,11 @@ fn analyze_utf16_string_value(
     let size_field_range = value_start..(value_start + metadata::UTF16_SIZE_FIELD_LENGTH);
     match data.get(size_field_range) {
         Some(data) => {
-            let (bytefield, value_end) = analyze_utf16_string(&data, value_start);
+            let (bytefield, value_end) = analyze_utf16_string(data, value_start);
             Ok((data::Value::Utf16String(bytefield), value_end))
         }
-        None => {
-            return Err(AnalysisError::DataAnalysisError(
-                data::Error::InvalidValueLength,
-            ));
-        }
+        None => Err(AnalysisError::DataAnalysisError(
+            data::Error::InvalidValueLength,
+        )),
     }
 }

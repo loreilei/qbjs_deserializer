@@ -20,13 +20,14 @@ pub fn deserialize_to_json(qbjs: &[u8]) -> Result<Value, DeserializeError> {
         return Err(DeserializeError::InsufficientData);
     }
 
-    match analyze_document(&qbjs) {
+    match analyze_document(qbjs) {
         Ok(value) => match value {
-            data::Value::Array(_) | data::Value::Object(_) => match read::read_value(&qbjs, &value)
-            {
-                Ok(value) => Ok(value),
-                Err(e) => Err(DeserializeError::ReadError(e)),
-            },
+            data::Value::Array(_) | data::Value::Object(_) => {
+                match read::read_value(qbjs, &value) {
+                    Ok(value) => Ok(value),
+                    Err(e) => Err(DeserializeError::ReadError(e)),
+                }
+            }
             _ => Err(DeserializeError::InvalidRootContainer),
         },
         Err(e) => Err(DeserializeError::AnalysisError(e)),
