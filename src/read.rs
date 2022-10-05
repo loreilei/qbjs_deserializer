@@ -39,21 +39,21 @@ fn read_utf16_string(data: &[u8], bytefield: &data::ByteField) -> Result<String,
 
 fn read_key(data: &[u8], key: &data::Key) -> Result<String, ReadError> {
     match key {
-        data::Key::Latin1String(bytefield) => read_latin1_string(&data, &bytefield),
-        data::Key::Utf16String(bytefield) => read_utf16_string(&data, &bytefield),
+        data::Key::Latin1String(bytefield) => read_latin1_string(data, bytefield),
+        data::Key::Utf16String(bytefield) => read_utf16_string(data, bytefield),
     }
 }
 
 pub fn read_value(data: &[u8], value: &data::Value) -> Result<Value, ReadError> {
     match value {
         data::Value::Null(_) => Ok(Value::Null),
-        data::Value::Bool(position) => read_bool(&data, *position),
-        data::Value::SelfContainedNumber(position) => read_self_contained_number(&data, *position),
-        data::Value::Number(bytefield) => read_number(&data, bytefield),
-        data::Value::Latin1String(bytefield) => read_latin1_string_value(&data, bytefield),
-        data::Value::Utf16String(bytefield) => read_utf16_string_value(&data, bytefield),
-        data::Value::Array(array) => read_array(&data, array),
-        data::Value::Object(object) => read_object(&data, object),
+        data::Value::Bool(position) => read_bool(data, *position),
+        data::Value::SelfContainedNumber(position) => read_self_contained_number(data, *position),
+        data::Value::Number(bytefield) => read_number(data, bytefield),
+        data::Value::Latin1String(bytefield) => read_latin1_string_value(data, bytefield),
+        data::Value::Utf16String(bytefield) => read_utf16_string_value(data, bytefield),
+        data::Value::Array(array) => read_array(data, array),
+        data::Value::Object(object) => read_object(data, object),
     }
 }
 
@@ -84,14 +84,14 @@ fn read_number(data: &[u8], bytefield: &data::ByteField) -> Result<Value, ReadEr
 }
 
 fn read_latin1_string_value(data: &[u8], bytefield: &data::ByteField) -> Result<Value, ReadError> {
-    match read_latin1_string(&data, &bytefield) {
+    match read_latin1_string(data, bytefield) {
         Ok(latin1_string) => Ok(Value::String(latin1_string)),
         Err(e) => Err(e),
     }
 }
 
 fn read_utf16_string_value(data: &[u8], bytefield: &data::ByteField) -> Result<Value, ReadError> {
-    match read_utf16_string(&data, &bytefield) {
+    match read_utf16_string(data, bytefield) {
         Ok(utf16_string) => Ok(Value::String(utf16_string)),
         Err(e) => Err(e),
     }
@@ -101,7 +101,7 @@ fn read_array(data: &[u8], array: &data::Array) -> Result<Value, ReadError> {
     match array
         .values
         .iter()
-        .map(|value| read_value(&data, &value))
+        .map(|value| read_value(data, value))
         .collect()
     {
         Ok(values) => Ok(Value::Array(values)),
@@ -114,8 +114,8 @@ fn read_object(data: &[u8], object: &data::Object) -> Result<Value, ReadError> {
         .entries
         .iter()
         .map(|entry| {
-            let key = read_key(&data, &entry.key);
-            let value = read_value(&data, &entry.value);
+            let key = read_key(data, &entry.key);
+            let value = read_value(data, &entry.value);
             match (key, value) {
                 (Ok(key), Ok(value)) => Ok((key, value)),
                 (Err(key_error), _) => Err(key_error),

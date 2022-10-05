@@ -25,7 +25,7 @@ pub fn as_i27(raw_value: u32) -> i32 {
     let is_negative_value = bit_field & sign_mask != 0;
 
     if is_negative_value {
-        -1 * (((!bit_field) + 1) % (2_u32.pow(26))) as i32
+        -((((!bit_field) + 1) % (2_u32.pow(26))) as i32)
     } else {
         bit_field as i32
     }
