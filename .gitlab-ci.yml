@@ -1,0 +1,25 @@
+build-linux:
+  tags: [saas-linux-small-amd64]
+  image: rust:1.64-alpine3.16
+  stage: build
+  before_script:
+    - cargo --version
+  script:
+    - cargo build --release
+    - mv /usr/local/cargo/registry /builds/qbjs_deserializer/qbjs_deserializer/cargo_registry
+  artifacts:
+    paths:
+      - /builds/qbjs_deserializer/qbjs_deserializer/Cargo.lock
+      - /builds/qbjs_deserializer/qbjs_deserializer/target
+      - /builds/qbjs_deserializer/qbjs_deserializer/cargo_registry # To avoid long crates.io update when running tests
+    expire_in: 10 minutes
+test-linux:
+  tags: [saas-linux-small-amd64]
+  image: rust:1.64-alpine3.16
+  needs: ["build-linux"]
+  stage: test
+  before_script:
+    - mv /builds/qbjs_deserializer/qbjs_deserializer/cargo_registry /usr/local/cargo/registry
+    - cargo --version
+  script:
+    - cargo test --release

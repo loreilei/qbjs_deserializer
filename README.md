@@ -1,5 +1,3 @@
-[![Build Status](https://app.travis-ci.com/loreilei/qbjs_deserializer.svg?branch=main)](https://app.travis-ci.com/loreilei/qbjs_deserializer)
-
 ## About this library
 
 This library is an attempt to deserialize files serialized in Qt5's internal binary JSON format.
@@ -35,5 +33,3 @@ These files are reused by tests: they are parsed with serde_json and the resulti
 ## C++ FFI
 Qt being mainly used with C++ projects, a C++ FFI is available in [this repository](https://github.com/loreilei/qbjs_deserializer_cxx).
 It provides [conan](https://conan.io/) packages and CMake finders.
-
-
