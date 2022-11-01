@@ -15,26 +15,27 @@ pub enum ReadError {
     InvalidUtf16StringDataRange,
     FailedToDecodeLatin1String,
     FailedToDecodeUtf16String,
+    FailedToDecodeNumber,
 }
 
 fn read_latin1_string(data: &[u8], bytefield: &data::ByteField) -> Result<String, ReadError> {
-    match data.get(bytefield.range.start..bytefield.range.end) {
-        Some(data) => match ISO_8859_1.decode(data, DecoderTrap::Strict) {
-            Ok(s) => Ok(s),
-            Err(_) => Err(ReadError::FailedToDecodeLatin1String),
-        },
-        None => Err(ReadError::InvalidLatin1StringDataRange),
-    }
+    let string_data = data
+        .get(bytefield.range.start..bytefield.range.end)
+        .ok_or(ReadError::InvalidLatin1StringDataRange)?;
+
+    ISO_8859_1
+        .decode(string_data, DecoderTrap::Strict)
+        .map_err(|_| ReadError::FailedToDecodeLatin1String)
 }
 
 fn read_utf16_string(data: &[u8], bytefield: &data::ByteField) -> Result<String, ReadError> {
-    match data.get(bytefield.range.start..bytefield.range.end) {
-        Some(data) => match UTF_16LE.decode(data, DecoderTrap::Strict) {
-            Ok(s) => Ok(s),
-            Err(_) => Err(ReadError::FailedToDecodeUtf16String),
-        },
-        None => Err(ReadError::InvalidUtf16StringDataRange),
-    }
+    let string_data = data
+        .get(bytefield.range.start..bytefield.range.end)
+        .ok_or(ReadError::InvalidUtf16StringDataRange)?;
+
+    UTF_16LE
+        .decode(string_data, DecoderTrap::Strict)
+        .map_err(|_| ReadError::FailedToDecodeUtf16String)
 }
 
 fn read_key(data: &[u8], key: &data::Key) -> Result<String, ReadError> {
@@ -58,43 +59,39 @@ pub fn read_value(data: &[u8], value: &data::Value) -> Result<Value, ReadError> 
 }
 
 fn read_bool(data: &[u8], position: usize) -> Result<Value, ReadError> {
-    match data.get(position) {
-        Some(data) => Ok(Value::Bool((*data & 0b100000) != 0)),
-        None => Err(ReadError::InvalidBoolDataPosition),
-    }
+    let bool_data = data
+        .get(position)
+        .ok_or(ReadError::InvalidBoolDataPosition)?;
+
+    Ok(Value::Bool((bool_data & 0b100000) != 0))
 }
 
 fn read_self_contained_number(data: &[u8], position: usize) -> Result<Value, ReadError> {
-    match data.get(position..(position + metadata::VALUE_HEADER_BYTE_SIZE)) {
-        Some(data) => Ok(Value::Number(serde_json::Number::from(as_i27(as_u32(
-            data,
-        ))))),
-        None => Err(ReadError::InvalidSelfContainedNumberDataPosition),
-    }
+    let number_data = data
+        .get(position..(position + metadata::VALUE_HEADER_BYTE_SIZE))
+        .ok_or(ReadError::InvalidSelfContainedNumberDataPosition)?;
+
+    let number = as_i27(as_u32(number_data));
+
+    Ok(Value::Number(serde_json::Number::from(number)))
 }
 
 fn read_number(data: &[u8], bytefield: &data::ByteField) -> Result<Value, ReadError> {
-    match data.get(bytefield.range.start..bytefield.range.end) {
-        Some(data) => {
-            let value = f64::from_bits(as_u64(data));
-            Ok(Value::Number(serde_json::Number::from_f64(value).unwrap()))
-        }
-        None => Err(ReadError::InvalidNumberDataRange),
-    }
+    let number_data = data
+        .get(bytefield.range.start..bytefield.range.end)
+        .ok_or(ReadError::InvalidNumberDataRange)?;
+
+    let number = f64::from_bits(as_u64(number_data));
+    let value = serde_json::Number::from_f64(number).ok_or(ReadError::FailedToDecodeNumber)?;
+    Ok(Value::Number(value))
 }
 
 fn read_latin1_string_value(data: &[u8], bytefield: &data::ByteField) -> Result<Value, ReadError> {
-    match read_latin1_string(data, bytefield) {
-        Ok(latin1_string) => Ok(Value::String(latin1_string)),
-        Err(e) => Err(e),
-    }
+    read_latin1_string(data, bytefield).map(Value::String)
 }
 
 fn read_utf16_string_value(data: &[u8], bytefield: &data::ByteField) -> Result<Value, ReadError> {
-    match read_utf16_string(data, bytefield) {
-        Ok(utf16_string) => Ok(Value::String(utf16_string)),
-        Err(e) => Err(e),
-    }
+    read_utf16_string(data, bytefield).map(Value::String)
 }
 
 fn read_array(data: &[u8], array: &data::Array) -> Result<Value, ReadError> {
