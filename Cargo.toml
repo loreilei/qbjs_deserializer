@@ -1,6 +1,6 @@
 [package]
 name = "qbjs_deserializer"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2021"
 authors = ["Alexandre Poirot <alexandre.poirot+qbjs_deserializer@gmail.com>"]
 description = "This crate attempts to deserialize files serialized in Qt5's internal binary JSON format to a serde_json value."
